@@ -1,42 +1,43 @@
-# Project configuration
+---
 general:
-  inferBuildTool: true
-  productiveBranch: 'main'
+  buildTool: "mta"
 
-# Stage configuration
 stages:
-  'Confirm':
-    manualConfirmation: false
+  Build:
+    mavenExecuteStaticCodeChecks: false
+    npmExecuteLint: true
 
-#  npmAudit:
-#    auditedAdvisories:
+  Additional Unit Tests:
+    npmExecuteScripts: false
+    karmaExecuteTests: false
 
-#  lint:
-#    ui5BestPractices:
-#      failThreshold:
-#        error: <THRESHOLD>
-#        warning: <THRESHOLD>
-#        info: <THRESHOLD>
+  Acceptance:
+    cloudFoundryDeploy: false
+    cfApiEndpoint: "https://api.cf.us10-001.hana.ondemand.com"
+    cfOrg: "c96f2572_dpedev"
+    cfSpace: "dev"
+    cfAppName: "app"
+    cfCredentialsId: "deploy-to-cf"
+    uiVeri5ExecuteTests: false
 
-# deploy to Cloud Foundry
-  productionDeployment:
-    cfTargets:
-      - appName: 'app'
-        org: 'c96f2572_dpedev'
-        space: 'dev'
-        apiEndpoint: 'https://api.cf.us10-001.hana.ondemand.com'
-        credentialsId: 'deploy-to-cf'
+  Release:
+    cloudFoundryDeploy: false
+    cfApiEndpoint: "https://api.cf.us10-001.hana.ondemand.com"
+    cfOrg: "c96f2572_dpedev"
+    cfSpace: "dev"
+    cfAppName: "app"
+    cfCredentialsId: "deploy-to-cf"
+    tmsUpload: false
 
-# Step configuration
 steps:
-  mavenExecute:
-    dockerImage: devxci/mbtci:1.0.14
-
   artifactPrepareVersion:
-    versioningType: cloud_noTag
+    versioningType: "cloud_noTag"
 
-# transport management upload
-#  tmsUpload:
-#    nodeName: 'dev'
-#    credentialsId: 'tms-sk'
-#    customDescription: 'app dev'
+  npmExecuteLint:
+    failOnError: true
+
+  cloudFoundryDeploy:
+    mtaDeployParameters: "-f --version-rule ALL"
+  tmsUpload:
+    nodeName: "qa"
+    credentialsId: "ctms"
