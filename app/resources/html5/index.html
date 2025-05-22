@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>App</title>
+</head>
+
+<body>
+    <h2>Business Application</h2>
+    <h3>Catalog</h3>
+    <a href="/catalog/">Catalog</a><br />
+    <a href="/catalog/$metadata">Metadata</a><br />
+    <a href="/catalog/Sales">Sales</a><br />
+    <a href="/catalog/topSales(amount=700)">Top Sales</a><br />
+    <a href="/catalog/SalesOrders?$top=10&$filter=TotalNetAmount%20gt%202000&$orderby=SalesOrder%20desc">Sales Orders</a><br />
+    <a href="/catalog/Sales(9)/CatalogService.largestOrder()">Largest Sales Order</a><br />
+    <a href="/catalog/userInfo()">User Info</a><br />
+</body>
+
+</html>
