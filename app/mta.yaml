@@ -1,0 +1,112 @@
+_schema-version: '3.2'
+ID: app
+version: 0.0.1
+
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install --production
+        - npx -p @sap/cds-dk cds build --production
+
+modules:
+  # ---------------- DATABASE DEPLOYER MODULE ------------------
+  - name: app-db-deployer
+  # ------------------------------------------------------------
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 256M
+      disk-quota: 1024M
+    requires:
+      - name: app-uaa
+      - name: app-db
+
+  # --------------------- SERVER MODULE ------------------------
+  - name: app-srv
+  # ------------------------------------------------------------
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 512M
+      disk-quota: 1024M
+    properties:
+      ApplicationInterfaceKey: saptest0
+      APIKey: 
+    requires:
+      - name: app-uaa
+      - name: app-dest
+      - name: app-db
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+
+  # ------------------ APP ROUTER MODULE -----------------------
+  - name: app
+  # ------------------------------------------------------------
+    type: approuter.nodejs
+    path: app
+    parameters:
+      memory: 256M
+      disk-quota: 1024M
+    requires:
+      - name: app-uaa
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv
+          url: ~{srv-url}
+          timeout: 60000
+          forwardAuthToken: true
+
+
+resources:
+  # ----------------------- UAA SERVICE ------------------------
+  - name: app-uaa
+  # ------------------------------------------------------------
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+
+  # -------------------- DESTINATION SERVICE -------------------
+  - name: app-dest
+  # ------------------------------------------------------------
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        init_data:
+          subaccount:
+            existing_destinations_policy: update
+            destinations:
+              - Name: app-API_SALES_ORDER_SRV
+                Description: SAP S/4HANA Cloud Sales Order (A2X)
+                URL: https://sandbox.api.sap.com
+                Type: HTTP
+                ProxyType: Internet
+                Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+
+
+
+  # ------------------- HDI CONTAINER SERVICE ------------------
+  - name: app-db
+  # ------------------------------------------------------------
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+    properties:
+      hdi-service-name: ${service-name}
+
+
+
